@@ -13,7 +13,7 @@ defmodule Sudoku.Algo do
   def generate_next(algo) do
     candidates = algo.current_cell.candidates
 
-    x =
+    new_boards =
       for [candidate | _] <- candidates do
         Board.build_from_new_candidate(algo.board, algo.current_cell, candidate)
       end

@@ -12,7 +12,10 @@ defmodule Sudoku do
       :world
 
   """
+  defstruct :
+
+  end
   def hello do
-    :x
+    :world
   end
 end

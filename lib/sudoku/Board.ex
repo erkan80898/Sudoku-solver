@@ -14,7 +14,7 @@ defmodule Sudoku.Board do
       board.representation
       |> List.update_at(cell.x, fn x -> List.update_at(x, cell.y, &(List.replace_at(&1, 0, candidate))) end)
 
-    new_representation
+    build_from_charlist(new_representation)
   end
 
   def build_from_str(board) do
@@ -44,32 +44,16 @@ defmodule Sudoku.Board do
     %Board{representation: board, cells: cells}
   end
 
-  @spec get_candidates(any, integer, integer) :: MapSet.t(any)
   def get_candidates(board, row_idx, col_idx) do
     space = 1..9 |> Enum.map(&Integer.to_charlist/1) |> MapSet.new()
 
-    rows = get_row_major(board)
     cols = get_col_major(board)
     squares = get_squares(board)
 
-    row = Enum.at(rows, row_idx)
+    row = Enum.at(board, row_idx)
     col = Enum.at(cols, col_idx)
 
-    to_add =
-      cond do
-        row_idx < 3 -> 0
-        row_idx < 6 -> 3
-        row_idx < 9 -> 6
-      end
-
-    square_idx =
-      cond do
-        col_idx < 3 -> to_add
-        col_idx < 6 -> to_add + 1
-        col_idx < 9 -> to_add + 2
-      end
-
-    square = Enum.at(squares, square_idx)
+    square = Enum.at(squares, get_square_index(row_idx, col_idx))
 
     candidates =
       MapSet.union(MapSet.new(row), MapSet.new(col))
@@ -78,6 +62,20 @@ defmodule Sudoku.Board do
     MapSet.difference(space, candidates)
   end
 
+  def get_square_index(row_idx, col_idx) do
+    to_add =
+      cond do
+        row_idx < 3 -> 0
+        row_idx < 6 -> 3
+        row_idx < 9 -> 6
+      end
+
+    cond do
+      col_idx < 3 -> to_add
+      col_idx < 6 -> to_add + 1
+      col_idx < 9 -> to_add + 2
+    end
+  end
   def transpose(grid), do: grid |> Enum.zip() |> Enum.map(&Tuple.to_list/1)
 
   def validate_board_size(grid) do
@@ -95,7 +93,6 @@ defmodule Sudoku.Board do
   def remove_period_str(list), do: Enum.map(list, fn x -> Enum.reject(x, &(&1 == ".")) end)
   def remove_period_char(list), do: Enum.map(list, fn x -> Enum.reject(x, &(&1 == [?.])) end)
 
-  def get_row_major(board), do: board
   def get_col_major(board), do: board |> transpose
   def get_row_major(board, transformation), do: transformation.(board)
   def get_col_major(board, transformation), do: transformation.(board |> transpose)
