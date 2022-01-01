@@ -17,7 +17,6 @@ defmodule Sudoku.Algo do
       for [candidate | _] <- candidates do
         Board.build_from_new_candidate(algo.board, algo.current_cell, candidate)
       end
-
-    x
+    new_boards
   end
 end

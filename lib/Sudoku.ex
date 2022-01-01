@@ -12,9 +12,6 @@ defmodule Sudoku do
       :world
 
   """
-  defstruct :
-
-  end
   def hello do
     :world
   end

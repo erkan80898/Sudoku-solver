@@ -14,7 +14,7 @@ defmodule Sudoku.Board do
       board.representation
       |> List.update_at(cell.x, fn x -> List.update_at(x, cell.y, &(List.replace_at(&1, 0, candidate))) end)
 
-    build_from_charlist(new_representation)
+    build_from_charlist(new_representation, {cell.x, cell.y})
   end
 
   def build_from_str(board) do
@@ -27,13 +27,13 @@ defmodule Sudoku.Board do
     end
   end
 
-  defp build_from_charlist(board) do
+  defp build_from_charlist(board, ignore \\ nil) do
 
     cells =
       for {row, row_idx} <- Enum.with_index(board),
           {val, col_idx} <- Enum.with_index(row),
           into: Map.new() do
-        if val == [?.] do
+        if val == [?.] || {row_idx, col_idx} == ignore do
           candidates = get_candidates(board, row_idx, col_idx)
           {{row_idx, col_idx}, Cell.new(row_idx, col_idx, val, true, candidates)}
         else
