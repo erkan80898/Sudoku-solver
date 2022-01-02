@@ -8,14 +8,14 @@ defmodule Sudoku.Cell do
             candidates: nil,
             visited: nil
 
-  def new(x, y, current_val, changeable, candidates) do
+  def new(x, y, current_val, changeable, candidates, visited \\ nil) do
     %Cell{
       x: x,
       y: y,
       current_val: current_val,
       changeable: changeable,
       candidates: candidates,
-      visited: MapSet.new()
+      visited: visited
     }
   end
 

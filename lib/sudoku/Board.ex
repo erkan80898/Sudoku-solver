@@ -9,37 +9,39 @@ defmodule Sudoku.Board do
             representation: nil,
             cells: nil
 
-  def build_from_new_candidate(board, cell, [[candidate]], space) do
+  def build_from_new_candidate(board, cell, [[candidate]]) do
     new_representation =
       board.representation
       |> List.update_at(cell.x, fn x ->
         List.update_at(x, cell.y, &List.replace_at(&1, 0, candidate))
       end)
 
-    IO.inspect(new_representation)
-    board = %{board | representation: new_representation}
-    build_from_charlist(board, space, {cell.x, cell.y})
+    new_cells =
+      board.cells
+      |> Map.replace({cell.x, cell.y}, cell)
+
+    board = %{board | representation: new_representation, cells: new_cells}
+    build_from_charlist(board, {cell.x, cell.y})
   end
 
   def build_from_str(board) do
     board = %Board{representation: board |> list_list_str_to_list_list_charlist}
 
     if validate_board_size(board) and is_valid_sudoku(board) do
-      space = 1..9 |> Enum.map(&Integer.to_charlist/1) |> MapSet.new()
-      {:ok, build_from_charlist(board, space)}
+      {:ok, build_from_charlist(board)}
     else
       {:error}
     end
   end
 
-  defp build_from_charlist(board, space, ignore \\ nil) do
+  defp build_from_charlist(board, ignore \\ nil) do
     cells =
       for {row, row_idx} <- Enum.with_index(board.representation),
           {val, col_idx} <- Enum.with_index(row),
           into: Map.new() do
         if val == [?.] or {row_idx, col_idx} == ignore do
-          candidates = get_candidates(board, row_idx, col_idx, space)
-          {{row_idx, col_idx}, Cell.new(row_idx, col_idx, val, true, candidates)}
+          {candidates, visited} = get_candidates(board, row_idx, col_idx)
+          {{row_idx, col_idx}, Cell.new(row_idx, col_idx, val, true, candidates, visited)}
         else
           {{row_idx, col_idx}, Cell.new(row_idx, col_idx, val, false, MapSet.new())}
         end
@@ -48,11 +50,19 @@ defmodule Sudoku.Board do
     %Board{board | cells: cells}
   end
 
-  def get_candidates(board, row_idx, col_idx, space) do
-    cols = get_col_major(board.representation)
-    squares = get_squares(board.representation)
+  def get_candidates(%{representation: grid, cells: cells}, row_idx, col_idx) do
+    {space, visited} =
+      if cells == nil do
+        {1..9 |> Enum.map(&Integer.to_charlist/1) |> MapSet.new(), MapSet.new()}
+      else
+        cell = cells[{row_idx, col_idx}]
+        {cell.candidates, cell.visited}
+      end
 
-    row = Enum.at(board.representation, row_idx)
+    cols = get_col_major(grid)
+    squares = get_squares(grid)
+
+    row = Enum.at(grid, row_idx)
     col = Enum.at(cols, col_idx)
 
     square = Enum.at(squares, get_square_index(row_idx, col_idx))
@@ -61,7 +71,8 @@ defmodule Sudoku.Board do
       MapSet.union(MapSet.new(row), MapSet.new(col))
       |> MapSet.union(MapSet.new(square))
 
-    MapSet.difference(space, candidates)
+    candidates = MapSet.difference(candidates, visited)
+    {MapSet.difference(space, candidates), visited}
   end
 
   def get_square_index(row_idx, col_idx) do

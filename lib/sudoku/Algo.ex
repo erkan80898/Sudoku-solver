@@ -25,7 +25,7 @@ defmodule Sudoku.Algo do
       do: :end
 
   def generate_next(algo) when algo.board.val != '.',
-    do: %{algo | current_cell: get_next_cell(algo)}
+    do: %{algo | current_cell: get_next_cell(algo.board, algo.current_cell)}
 
   def generate_next(algo) do
     candidates = algo.current_cell.candidates
@@ -38,14 +38,15 @@ defmodule Sudoku.Algo do
       Board.build_from_new_candidate(
         algo.board,
         adjusted_current_cell,
-        candidate,
-        adjusted_current_cell.visited
+        candidate
       )
 
-    {%{algo | board: new_board, current_cell: get_next_cell(algo)}, candidate}
+    next_cell = get_next_cell(new_board, adjusted_current_cell)
+
+    %{algo | board: new_board, current_cell: next_cell}
   end
 
-  def get_next_cell(%{board: %{cells: cells}, current_cell: %{x: row_idx, y: col_idx}}) do
+  def get_next_cell(%{cells: cells}, %{x: row_idx, y: col_idx}) do
     key = if col_idx >= 8, do: {row_idx + 1, 0}, else: {row_idx, col_idx + 1}
     cells[key]
   end
