@@ -9,7 +9,7 @@ defmodule Sudoku.Board do
             representation: nil,
             cells: nil
 
-  def build_from_new_candidate(board, cell, candidate) do
+  def build_from_new_candidate(board, cell, [candidate]) do
     new_representation =
       board.representation
       |> List.update_at(cell.x, fn x ->
