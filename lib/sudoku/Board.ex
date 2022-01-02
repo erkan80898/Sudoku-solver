@@ -12,14 +12,16 @@ defmodule Sudoku.Board do
   def build_from_new_candidate(board, cell, candidate) do
     new_representation =
       board.representation
-      |> List.update_at(cell.x, fn x -> List.update_at(x, cell.y, &(List.replace_at(&1, 0, candidate))) end)
+      |> List.update_at(cell.x, fn x ->
+        List.update_at(x, cell.y, &List.replace_at(&1, 0, candidate))
+      end)
 
     build_from_charlist(new_representation, {cell.x, cell.y})
   end
 
   def build_from_str(board) do
-
     board = board |> list_list_str_to_list_list_charlist
+
     if validate_board_size(board) && is_valid_sudoku(board) do
       {:ok, build_from_charlist(board)}
     else
@@ -28,7 +30,6 @@ defmodule Sudoku.Board do
   end
 
   defp build_from_charlist(board, ignore \\ nil) do
-
     cells =
       for {row, row_idx} <- Enum.with_index(board),
           {val, col_idx} <- Enum.with_index(row),
@@ -76,6 +77,7 @@ defmodule Sudoku.Board do
       col_idx < 9 -> to_add + 2
     end
   end
+
   def transpose(grid), do: grid |> Enum.zip() |> Enum.map(&Tuple.to_list/1)
 
   def validate_board_size(grid) do
@@ -99,13 +101,13 @@ defmodule Sudoku.Board do
 
   def get_squares(board) do
     board
-      |> Enum.chunk_every(3)
-      |> Enum.map(fn x -> Enum.map(x, &Enum.chunk_every(&1, 3)) end)
-      |> Enum.map(fn x -> Enum.zip(x) end)
-      |> List.flatten()
-      |> Enum.map(&Tuple.to_list/1)
-      |> Enum.map(&List.flatten/1)
-      |> Enum.map(fn x -> Enum.map(x, &[&1]) end)
+    |> Enum.chunk_every(3)
+    |> Enum.map(fn x -> Enum.map(x, &Enum.chunk_every(&1, 3)) end)
+    |> Enum.map(fn x -> Enum.zip(x) end)
+    |> List.flatten()
+    |> Enum.map(&Tuple.to_list/1)
+    |> Enum.map(&List.flatten/1)
+    |> Enum.map(fn x -> Enum.map(x, &[&1]) end)
   end
 
   def get_squares(board, transformation) do

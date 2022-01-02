@@ -16,4 +16,8 @@ defmodule Sudoku.Cell do
       candidates: candidates
     }
   end
+
+  def has_candidates?(cell) do
+    Enum.empty?(cell.candidates)
+  end
 end
