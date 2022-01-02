@@ -5,7 +5,8 @@ defmodule Sudoku.Cell do
             y: nil,
             current_val: nil,
             changeable: nil,
-            candidates: nil
+            candidates: nil,
+            visited: nil
 
   def new(x, y, current_val, changeable, candidates) do
     %Cell{
@@ -13,8 +14,15 @@ defmodule Sudoku.Cell do
       y: y,
       current_val: current_val,
       changeable: changeable,
-      candidates: candidates
+      candidates: candidates,
+      visited: MapSet.new()
     }
+  end
+
+  # next iteration takes care of actually removing from candidates list
+  def add_to_visited_candidate(cell, candidate) do
+    visited = MapSet.union(cell.visited, candidate)
+    %{cell | visited: visited}
   end
 
   def has_candidates?(cell) do
